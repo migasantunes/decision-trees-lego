@@ -43,11 +43,11 @@ pip install -r requirements.txt
 1. Activate the virtual environment
 2. Open the notebooks in your preferred IDE or Jupyter Notebook
 3. Select the kernel from .venv
-4. Run the cells in the notebooks
+4. Run the notebooks by clicking `Restart` and then `Run All` in the notebook interface.
 
 ## Additional Information
 
-- To be able to use the `src` module in the notebooks, we added \_\_init\_\_.py to the src directory, making it importable. Then, we used the following code snippet at the beginning of each notebook:
+- To be able to use the `src` module in the notebooks, we added `__init__.py` to the src directory, making it importable. Then, we used the following code snippet at the beginning of each notebook:
 
 ```python
 import sys, pathlib
