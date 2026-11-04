@@ -1,9 +1,11 @@
 import numpy as np
 import pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
 
 COLOURS = ["red", "blue", "yellow", "green", "black", "white"]
 BRICK_SHAPES = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8)]
-FEATURES = ["stud_rows", "stud_cols","colour"]
+FEATURES = ["stud_rows", "stud_cols", "colour"]
 TARGET = "accepted"
 
 def builder_rule(stud_rows, stud_cols, colour):
@@ -11,8 +13,15 @@ def builder_rule(stud_rows, stud_cols, colour):
     This function implements the builder's rule for accepting or rejecting a Lego brick.
     
     The rule needs to achieve almost 50% acceptance rate within the dataset
+    Rule: 
+    - if the brick is red and has 4 or more studs in the column direction, it is accepted.
+    - if the brick is not red and has 2 studs in the row direction, it is accepted.
+    - otherwise, it is rejected.
     """
-    return (colour == "red" and stud_cols >=4) or (colour != "red" and stud_rows == 2)
+    stud_rows, stud_cols, colour = map(np.asarray, (stud_rows, stud_cols, colour))
+    is_red = colour == "red"
+
+    return (is_red & (stud_cols >= 4)) | (~is_red & (stud_rows == 2)) 
 
 def make_data(n=300, noise=0.0, seed=42):
     """
@@ -26,14 +35,21 @@ def make_data(n=300, noise=0.0, seed=42):
     Returns:
     pd.DataFrame containing the generated dataset
     """
+
+    # Validate inputs
+    if n <= 0: raise ValueError("n must be positive")
+    if not 0 <= noise <= 0.5: raise ValueError("noise must be in [0, 0.5]")
+
     ss = np.random.SeedSequence(seed)
     feat_rng, noise_rng = [np.random.default_rng(s) for s in ss.spawn(2)]
 
-    stud_rows, stud_cols = zip(*feat_rng.choice(BRICK_SHAPES, size=n))
+    shapes = feat_rng.choice(np.array(BRICK_SHAPES), size=n)
+    stud_rows, stud_cols = shapes[:, 0], shapes[:, 1]
+
 
     colours = feat_rng.choice(COLOURS, size=n)
 
-    accepted_true = np.array([builder_rule(sr, sc, c) for sr, sc, c in zip(stud_rows, stud_cols, colours)])
+    accepted_true = builder_rule(stud_rows, stud_cols, colours)
 
     accepted = accepted_true.copy()
     flipped = np.zeros(n, dtype=bool)
@@ -46,7 +62,7 @@ def make_data(n=300, noise=0.0, seed=42):
 
     data = {"stud_rows": stud_rows, 
             "stud_cols": stud_cols, 
-            "colour": colours, 
+            "colour": pd.Categorical(colours, categories=COLOURS),
             "accepted": accepted, 
             "accepted_true": accepted_true, 
             "flipped": flipped}
@@ -54,4 +70,13 @@ def make_data(n=300, noise=0.0, seed=42):
     return pd.DataFrame(data)
 
 def make_encoder():
-    return 0
+    """
+    Unfitted encoder: one-hot for colour, stud counts passed through unchanged.
+
+    Fit it on training data only, then reuse it to transform the test data.
+    """
+    return ColumnTransformer(transformers=[("colour", OneHotEncoder(categories=[COLOURS], 
+                                                                    sparse_output=False,
+                                                                    handle_unknown="ignore", drop="first"), ["colour"]),
+                                           ("studs", "passthrough", ["stud_rows", "stud_cols"])],
+                             verbose_feature_names_out=False)
