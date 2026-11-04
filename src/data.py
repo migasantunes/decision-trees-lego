@@ -77,6 +77,6 @@ def make_encoder():
     """
     return ColumnTransformer(transformers=[("colour", OneHotEncoder(categories=[COLOURS], 
                                                                     sparse_output=False,
-                                                                    handle_unknown="ignore", drop="first"), ["colour"]),
+                                                                    handle_unknown="ignore"), ["colour"]),
                                            ("studs", "passthrough", ["stud_rows", "stud_cols"])],
                              verbose_feature_names_out=False)
