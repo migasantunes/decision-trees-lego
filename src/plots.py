@@ -118,3 +118,23 @@ def plot_importances(tree, enc, group_colour=True, ax=None, title=None):
     if title:
         ax.set_title(title)
     return ax
+
+def trace(tree, enc, brick):
+    """
+    Print the root-to-leaf path of one brick (a 1-row DataFrame) and the leaf's majority vote.
+    """
+    names = enc.get_feature_names_out()
+    x = enc.transform(brick[FEATURES])
+    t = tree.tree_
+    print("Brick:", brick[FEATURES].iloc[0].to_dict())
+    for node in tree.decision_path(x).indices:
+        if t.children_left[node] == -1:
+            frac = t.value[node][0]
+            print(f"  leaf {node}: {t.n_node_samples[node]} training bricks, "
+                  f"fractions (Rejected, Accepted) = {np.round(frac, 2)} -> majority: {CLASS_NAMES[np.argmax(frac)]}")
+        else:
+            f, thr = t.feature[node], t.threshold[node]
+            v = x[0, f]
+            print(f"  node {node}: {names[f]} = {v:g} <= {thr:.2f}? {'yes -> left' if v <= thr else 'no -> right'}")
+    print("Prediction:", CLASS_NAMES[int(tree.predict(x)[0])],
+          "| true label:", CLASS_NAMES[int(brick[TARGET].iloc[0])])
