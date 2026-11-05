@@ -21,7 +21,7 @@ Decision Trees with LEGO - Machine Learning Project
 
 ## Contributions
 
-### Ricardo
+### Ricardo Tavares
 
 - 
 - 
@@ -40,8 +40,9 @@ Decision Trees with LEGO - Machine Learning Project
 - Plotting helpers
 
 ## AI Use
-> Tools: Claude, Google, GitHub Copilot
+> Tools: Claude, Google, GitHub Copilot, Gemini
 
+- Image creation for the presentation slides
 - Creation of the Project Plan to organize the work by tasks and responsibilities delegated to each team member
 - Code review, generation and improvement suggestions
 - Code generation for the plotting helpers

@@ -37,7 +37,7 @@ The 30 minutes are one story with Q&A inside it: the audience races the clock to
 | --- | --- | --- | --- | --- |
 | 0:00–1:30 | Hook | A | Slides | The question: how would you decide with only yes/no questions? |
 | 1:30–7:00 | Lego race | B (A and C hand out kits) | Slides with countdown | Build a tree that sorts bricks into the picky builder's Accepted and Rejected boxes, using colour, stud rows and stud columns, before the timer ends; one mislabeled brick forces an extra question; quick debrief |
-| 7:00–11:00 | How a tree works | A | Slides | Bricks map to the dataset; thresholds, Gini impurity, leaf majority vote |
+| 7:00–11:00 | How a tree works | A | Slides | Bricks map to the dataset; thresholds, entropy / information gain, leaf majority vote |
 | 11:00–15:30 | Favourable case + Q&A | A | Notebook | Shallow tree, decision regions, tree diagram, one point traced root to leaf |
 | 15:30–20:30 | Controlled failure + Q&A | B | Notebook | Prediction slide first, then label noise on a small training set with a deep tree: train high, test drops, extra leaves built around noisy bricks |
 | 20:30–25:30 | Improvement + Q&A | C | Notebook | Depth and min leaf size chosen by CV; train/test curves; stability across reseeds |
@@ -66,7 +66,7 @@ In code it is one line in `make_data()`, for example `y = rule(colour, stud_rows
 
 **Watch the small feature space.** The number of distinct bricks is only rows × cols × colours, 2 × 8 × 6 = 96 with the placeholder ranges, so 300 points contain many duplicates. Recheck this once B confirms the ranges. With that much data, even a deep tree can take a majority vote per brick type and shrug off noise. The failure therefore uses a **small training set** (about 60 bricks) on top of label noise, so many brick types are seen once and the tree memorises whichever label they carry. Duplicates with conflicting labels also mean training accuracy can stay below 100%, so don't promise 100% on the slide.
 
-**Protocol, fixed for all runs.** Gini criterion. Accuracy is the main metric, since classes are roughly balanced; macro-F1 is reported alongside. Train and test scores are shown for every run, and CV uses 5 folds on training data only.
+**Protocol, fixed for all runs.** Entropy criterion. Accuracy is the main metric, since classes are roughly balanced; macro-F1 is reported alongside. Train and test scores are shown for every run, and CV uses 5 folds on training data only.
 
 | Experiment | Condition | Prediction to write first | What to show |
 | --- | --- | --- | --- |
@@ -163,7 +163,7 @@ Individual answers are 40% of the grade, and questions can now land at any point
 | Rescale `stud_cols` ×10 | Nothing changes | Trees split on thresholds per feature, so scale is irrelevant |
 | Change the seed | Root split likely stays; deep branches change | Deep trees have high variance |
 
-Also prepare short answers to: what Gini impurity measures, why a leaf predicts by majority, how the root split is chosen, why test data is not used to pick depth, and what one fix would be beyond pruning (bagging or a random forest).
+Also prepare short answers to: what entropy measures, why a leaf predicts by majority, how the root split is chosen, why test data is not used to pick depth, and what one fix would be beyond pruning (bagging or a random forest).
 
 ## Risks and final checklist
 
