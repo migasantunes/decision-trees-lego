@@ -37,10 +37,11 @@ Decision Trees with LEGO - Machine Learning Project
 
 - Repository Setup
 - Data Generation & Checks(synthetic LEGO dataset)
-- 
+- Plotting helpers
 
 ## AI Use
 > Tools: Claude, Google, GitHub Copilot
 
 - Creation of the Project Plan to organize the work by tasks and responsibilities delegated to each team member
 - Code review, generation and improvement suggestions
+- Code generation for the plotting helpers
