@@ -102,7 +102,7 @@ def plot_curves(values, train_scores, test_scores=None, cv_scores=None, cv_std=N
 
 def plot_importances(tree, enc, group_colour=True, ax=None, title=None):
     """
-    Gini feature importances. With group_colour=True the one-hot colour_* columns
+    Entropy importances. With group_colour=True the one-hot colour_* columns
     are summed into a single 'colour' bar, so the three original features are compared.
     """
     imp = pd.Series(tree.feature_importances_, index=enc.get_feature_names_out())
@@ -113,7 +113,7 @@ def plot_importances(tree, enc, group_colour=True, ax=None, title=None):
     if ax is None:
         _, ax = plt.subplots(figsize=(5, 0.4 * len(imp) + 1))
     ax.barh(imp.index, imp.values, color="C0")
-    ax.set_xlabel("importance (Gini decrease)")
+    ax.set_xlabel("importance (entropy decrease)")
     ax.set_xlim(0, 1)
     if title:
         ax.set_title(title)
