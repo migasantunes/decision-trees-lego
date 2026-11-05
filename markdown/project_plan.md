@@ -36,7 +36,7 @@ The 30 minutes are one story with Q&A inside it: the audience races the clock to
 | Time | Block | Presenter | Medium | What the audience sees |
 | --- | --- | --- | --- | --- |
 | 0:00–1:30 | Hook | A | Slides | The question: how would you decide with only yes/no questions? |
-| 1:30–7:00 | Lego race | B (A and C hand out kits) | Slides with countdown | Build a tree from bricks (colour, stud rows, stud columns) before the timer ends; one mislabeled brick forces an extra question; quick debrief |
+| 1:30–7:00 | Lego race | B (A and C hand out kits) | Slides with countdown | Build a tree that sorts bricks into the picky builder's Accepted and Rejected boxes, using colour, stud rows and stud columns, before the timer ends; one mislabeled brick forces an extra question; quick debrief |
 | 7:00–11:00 | How a tree works | A | Slides | Bricks map to the dataset; thresholds, Gini impurity, leaf majority vote |
 | 11:00–15:30 | Favourable case + Q&A | A | Notebook | Shallow tree, decision regions, tree diagram, one point traced root to leaf |
 | 15:30–20:30 | Controlled failure + Q&A | B | Notebook | Prediction slide first, then label noise on a small training set with a deep tree: train high, test drops, extra leaves built around noisy bricks |
@@ -50,20 +50,28 @@ The Lego race is not on a rigid clock. An on-screen countdown sets the pace, and
 
 The three experiments share one dataset generator and one fixed evaluation protocol. Only the condition under test changes.
 
-**Dataset.** Three features describe each brick: `stud_rows` (the short side, 1–2), `stud_cols` (the long side, 1–8) and `colour` (whichever colours our kits contain, likely 6 or more). Orientation is fixed, with rows always the short side, so a 2×4 is never recorded as 4×2. The class follows a rule that combines colour and size, such as "class 1 if red, or if `stud_cols` ≥ 6". Bricks are drawn only from the sizes actually in our LSP kits, so check the kits before fixing the rule. Use about 300 bricks, `random_state=42`, and a stratified 70/30 train/test split.
+**Dataset.** The story is a **picky builder** who sorts every brick into one of two boxes: **Accepted** (goes into the build) or **Rejected** (back in the bin). Three features describe each brick: `stud_rows` (the short side, 1–2), `stud_cols` (the long side, 1–8) and `colour` (6 colours). These ranges are placeholders until B counts the kits and confirms them. Orientation is fixed, with rows always the short side, so a 2×4 is never recorded as 4×2. Use about 300 bricks, `random_state=42`, and a stratified 70/30 train/test split.
+
+**The builder's rule (placeholder).** The class rule is the hidden formula that decides Accepted or Rejected. It is **TBD**, fixed by B once the kit pieces are counted. Requirements for the rule:
+
+- It uses **all three features**, so each one has a reason to appear in the tree.
+- `max_depth=3` can represent it exactly, so Exp. 1 can show the tree recovering it.
+- Accepted and Rejected each hold roughly half the bricks, given the sizes and colours in our kits.
+
+In code it is one line in `make_data()`, for example `y = rule(colour, stud_rows, stud_cols)`. Use a dummy rule until B confirms.
 
 **Why these features.** Stud count alone would merge different bricks: a 1×8 and a 2×4 both have 8 studs. Rows and columns together define the brick. `stud_cols` carries the threshold splits, such as "cols ≥ 6?". `stud_rows` is nearly binary, so expect one split on it at most. Colour carries real signal and should appear near the root, which is the same "is it red?" question people will ask in the Lego race.
 
 **Encoding and plots.** Colour is one-hot encoded, with the encoder fitted on training data only, so splits read "is\_red = 1". Numbering colours would allow meaningless splits like "colour ≤ 1.5". The main visual is a grid of small panels, one per colour, each showing `stud_cols` × `stud_rows` with its decision regions. Each panel is 2D, as the brief asks. With many colours, show the colours in the rule plus two or three others, and keep the full grid in the notebook only. The tree diagram and feature importances show all three features. Since the features are whole numbers, add a small jitter to the scatter points so identical bricks don't hide each other (for display only).
 
-**Watch the small feature space.** The number of distinct bricks is only rows × cols × colours, for example 2 × 8 × 8 = 128, so 300 points contain many duplicates. More colours means fewer duplicates, so recheck this once the kit colours are counted. With that much data, even a deep tree can take a majority vote per brick type and shrug off noise. The failure therefore uses a **small training set** (about 60 bricks) on top of label noise, so many brick types are seen once and the tree memorises whichever label they carry. Duplicates with conflicting labels also mean training accuracy can stay below 100%, so don't promise 100% on the slide.
+**Watch the small feature space.** The number of distinct bricks is only rows × cols × colours, 2 × 8 × 6 = 96 with the placeholder ranges, so 300 points contain many duplicates. Recheck this once B confirms the ranges. With that much data, even a deep tree can take a majority vote per brick type and shrug off noise. The failure therefore uses a **small training set** (about 60 bricks) on top of label noise, so many brick types are seen once and the tree memorises whichever label they carry. Duplicates with conflicting labels also mean training accuracy can stay below 100%, so don't promise 100% on the slide.
 
 **Protocol, fixed for all runs.** Gini criterion. Accuracy is the main metric, since classes are roughly balanced; macro-F1 is reported alongside. Train and test scores are shown for every run, and CV uses 5 folds on training data only.
 
 | Experiment | Condition | Prediction to write first | What to show |
 | --- | --- | --- | --- |
-| 1. Favourable case | Clean labels, full training set, `max_depth=3` | Near-perfect test accuracy, because the rule is one colour split plus one threshold on `stud_cols` | Tree diagram, per-colour decision regions, root-to-leaf trace for one brick, `export_text`, feature importances (colour and `stud_cols` high) |
-| 2. Controlled failure | 15% label noise, about 60 training bricks, `max_depth=None` | Train well above test; extra leaves appear, and the tree splits on `stud_rows` and other colours to isolate noisy bricks | Same plots side by side with Exp. 1, leaf count, train/test gap, feature importances shifting away from the true rule |
+| 1. Favourable case | Clean labels, full training set, `max_depth=3` | Near-perfect test accuracy, because the builder's rule is a few axis-aligned questions that a depth-3 tree can express | Tree diagram next to the true rule, per-colour decision regions, root-to-leaf trace for one brick, `export_text`, feature importances |
+| 2. Controlled failure | 15% label noise, about 60 training bricks, `max_depth=None` | Train well above test; extra leaves appear to isolate noisy bricks | Same plots side by side with Exp. 1, leaf count, train/test gap, feature importances shifting away from the true rule |
 | 3. Attempted improvement | Same noisy, small data; depth and `min_samples_leaf` chosen by CV | Test recovers most of the gap, though not to Exp. 1 levels | Train/test curve over depth, CV-chosen tree, regions; stability check over 5 seeds |
 
 **Stability add-on.** Refit the deep tree on 5 bootstrap resamples and show how the root split and region shapes move. This covers the "stability of the learned tree" point the topic asks for.
@@ -77,11 +85,11 @@ Each person owns one experiment end to end and reviews another's, so nobody can 
 | # | Task | Owner | Reviewer | Depends on | Due |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Repo, folder layout, `requirements.txt`, README skeleton | A | C | — | Thu 5 |
-| 2 | Data generator (`make_data()` with stud\_rows, stud\_cols, colour, noise and n parameters; sizes taken from our kits) | A | B | 1; class rule agreed at Wed kickoff | Thu 5 |
+| 2 | Data generator (`make_data()` with stud\_rows, stud\_cols, colour, noise and n parameters; sizes taken from our kits) | A | B | 1; ranges and rule from task 6 (build with placeholders first) | Thu 5 |
 | 3 | Shared plotting helpers (decision regions, tree diagram, train/test curve, feature importances) | A | C | 1, 2 | Thu 5 |
 | 4 | PowerPoint template and slide outline for the 30 minutes | A | B | — | Thu 5 |
 | 5 | Exp. 1 favourable case and root-to-leaf trace of one observation | A | B | 2, 3 | Fri 6 |
-| 6 | Lego race script, brick-to-feature mapping, hidden labels on bricks | B | A | Class rule agreed at Wed kickoff | Fri 6 |
+| 6 | Count kit pieces, confirm feature ranges and fix the builder's rule; Lego race script and Accepted/Rejected stickers | B | A | Kits in hand | Fri 6 |
 | 7 | Exp. 2 controlled failure (label noise, small training set, deep tree) | B | C | 2, 3, 5 (same protocol, side-by-side plots) | Fri 6 |
 | 8 | Stability check over bootstrap resamples | B | A | 7 | Sat 7 |
 | 9 | Exp. 3 improvement (CV over `max_depth` and `min_samples_leaf`) | C | A | 7 (noisy setup); scaffold can start on dummy data | Sat 7 |
@@ -95,7 +103,7 @@ Each person owns one experiment end to end and reviews another's, so nobody can 
 | 17 | Lego kits packed and counted (one per spectator, plus spares) | B | — | 6 | Sun 8 |
 | 18 | Final report edit, ZIP, and InforEstudante submission | A | C | 10–16 | Mon 9, 12:00 |
 
-**Critical path.** A's tasks 1–3 block both experiments, so they must be merged by Thursday evening. Until then, B works on the Lego script (6) and C builds the CV scaffold on dummy data. The second bottleneck is Exp. 2 (7): Exp. 3, the stability check and two slide blocks all wait on it, so B should push it by Friday night.
+**Critical path.** A's tasks 1–3 block both experiments, so they must be merged by Thursday evening. Until then, B works on the Lego script (6) and C builds the CV scaffold on dummy data. The second bottleneck is Exp. 2 (7): Exp. 3, the stability check and two slide blocks all wait on it, so B should push it by Friday night. B should also confirm the kit ranges and the builder's rule by Thursday, so the generator and the written predictions use the real values.
 
 Each person writes their own contribution statement. Everyone logs AI use as it happens in a shared note, so the declaration is not reconstructed on Sunday.
 
@@ -144,13 +152,13 @@ Individual answers are 40% of the grade, and questions can now land at any point
 
 | Likely live change | Expected effect | Why |
 | --- | --- | --- |
-| `max_depth` 3 → 1 | Only the colour split (or only the cols split) remains; train and test drop | Underfitting: one question can't express an "or" rule |
+| `max_depth` 3 → 1 | Only the strongest question remains; train and test drop | Underfitting: one question can't express a rule built on three features |
 | `max_depth` → None on clean data | Test stays high | No noise to memorise, so the extra splits are mostly harmless |
 | Raise noise 15% → 30% | Bigger train/test gap for the deep tree; CV picks a shallower tree | More noise to memorise |
 | `min_samples_leaf` 1 → 10 | Fewer leaves, smaller gap | Each leaf must average over more bricks |
 | Training set 60 → 300 bricks | Deep tree's gap mostly closes | Duplicates let each leaf take a majority vote that outvotes the noise |
-| Drop the colour feature | Test drops clearly | The "is red?" part of the rule can't be learned from size alone |
-| Remove colour from the labelling rule | Colour importance falls to near 0 | A feature only matters if the label depends on it |
+| Drop one feature (e.g. colour) | Test drops clearly | The part of the rule that used it can't be learned from the others |
+| Remove a feature from the builder's rule | Its importance falls to near 0 | A feature only matters if the label depends on it |
 | Swap rows and columns for some bricks | Noisier tree, more leaves | Orientation errors act like noise in the features |
 | Rescale `stud_cols` ×10 | Nothing changes | Trees split on thresholds per feature, so scale is irrelevant |
 | Change the seed | Root split likely stays; deep branches change | Deep trees have high variance |
