@@ -3,8 +3,10 @@ import pandas as pd
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 
-COLOURS = ["red", "blue", "yellow", "green", "black", "white"]
-BRICK_SHAPES = [(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (2, 2), (2, 3), (2, 4), (2, 5), (2, 6), (2, 7), (2, 8)]
+# Colours and shapes match the physical LEGO kits used in the activity (and the mystery bricks).
+COLOURS = ["yellow", "blue", "red", "pink", "beige", "brown", "green", "black"]
+BRICK_SHAPES = [(1, 2), (1, 3), (1, 4), (1, 6), (1, 10), (2, 2), (2, 3), (2, 4), (2, 6), (2, 8)]
+SPECIAL_COLOUR = "yellow"   # the colour the picky builder treats differently
 FEATURES = ["stud_rows", "stud_cols", "colour"]
 TARGET = "accepted"
 
@@ -14,14 +16,14 @@ def builder_rule(stud_rows, stud_cols, colour):
     
     The rule needs to achieve almost 50% acceptance rate within the dataset
     Rule: 
-    - if the brick is red and has 4 or more studs in the column direction, it is accepted.
-    - if the brick is not red and has 2 studs in the row direction, it is accepted.
+    - if the brick is of the special color and has 4 or more studs in the column direction, it is accepted.
+    - if the brick is not of the special color and has 2 studs in the row direction, it is accepted.
     - otherwise, it is rejected.
     """
     stud_rows, stud_cols, colour = map(np.asarray, (stud_rows, stud_cols, colour))
-    is_red = colour == "red"
+    is_special = colour == SPECIAL_COLOUR
 
-    return (is_red & (stud_cols >= 4)) | (~is_red & (stud_rows == 2)) 
+    return (is_special & (stud_cols >= 4)) | (~is_special & (stud_rows == 2))
 
 def make_data(n=300, noise=0.0, seed=42):
     """
