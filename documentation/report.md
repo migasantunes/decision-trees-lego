@@ -23,7 +23,7 @@ Decision Trees with LEGO - Machine Learning Project
 
 ### Ricardo Tavares
 
-- 
+- Experiment 3 - Attempted Improvement: Optimizing max_depth and min_samples_leaf using GridsearchCV
 - 
 - 
 
