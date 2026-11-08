@@ -4,7 +4,8 @@ from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import OneHotEncoder
 
 # Colours and shapes match the physical LEGO kits used in the activity (and the mystery bricks).
-COLOURS = ["yellow", "blue", "red", "pink", "beige", "brown", "green", "black"]
+# Each colour keeps its position in the list, so renaming a colour does not change the generated data.
+COLOURS = ["yellow", "blue", "dark_green", "pink", "beige", "brown", "light_green", "black"]
 BRICK_SHAPES = [(1, 2), (1, 3), (1, 4), (1, 6), (1, 10), (2, 2), (2, 3), (2, 4), (2, 6), (2, 8)]
 SPECIAL_COLOUR = "yellow"   # the colour the picky builder treats differently
 FEATURES = ["stud_rows", "stud_cols", "colour"]
