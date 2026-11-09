@@ -10,15 +10,12 @@ This project explores the use and explanation of decision trees in a fun and eng
 
 ```
 decision-trees-lego/
-├── markdown/
-│   ├── challenge_brief.md
-│   ├── project_plan.md
+├── documentation/
 │   └── report.md            # Final project report
 ├── notebooks/
-│   ├── demo.ipynb           # Final notebook used in the presentation
-│   ├── dev_a.ipynb          # Dev A notebook
-│   ├── dev_b.ipynb          # Dev B notebook
-│   └── dev_c.ipynb          # Dev C notebook
+│   ├── dev_a.ipynb          # Data checks and Exp. 1: favourable case
+│   ├── dev_b.ipynb          # Exp. 2: controlled failure (label noise) + stability check
+│   └── dev_c.ipynb          # Exp. 3: attempted improvement (GridSearchCV)
 ├── src/
 │   ├── __init__.py          # Makes src importable
 │   ├── data.py              # Synthetic LEGO data generator
@@ -44,6 +41,9 @@ pip install -r requirements.txt
 2. Open the notebooks in your preferred IDE or Jupyter Notebook
 3. Select the kernel from .venv
 4. Run the notebooks by clicking `Restart` and then `Run All` in the notebook interface.
+
+> Run them in order: dev_a (Exp. 1), dev_b (Exp. 2 and stability), dev_c (Exp. 3).\
+> Each notebook is self-contained and regenerates its own data from src/data.py.
 
 ## Additional Information
 
